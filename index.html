@@ -3,19 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>150796</title>
+  <title>Benvenuta, Rahma</title>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; background: #FFF6E3; color: #1B2B21; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; text-align: center; }
-    .card { background: #fff; border: 3px solid #1B2B21; padding: 40px; border-radius: 22px; max-width: 500px; box-shadow: 6px 6px 0 #1B2B21; }
-    h1 { color: #1F883D; margin-top: 0; }
-    p { color: #5C6A5F; line-height: 1.6; }
+    :root {
+      --bg: #FFF6E3;
+      --ink: #1B2B21;
+      --muted: #5C6A5F;
+      --accent: #1F883D;
+      --card: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 16px;
+      text-align: center;
+      transition: background .6s;
+    }
+    body[data-momento="mattina"]    { --bg: #FFF6E3; --accent: #1F883D; }
+    body[data-momento="pomeriggio"] { --bg: #FFEFC2; --accent: #B8680B; }
+    body[data-momento="sera"]       { --bg: #FFE0D1; --accent: #B3391F; }
+    body[data-momento="notte"]      { --bg: #DCE3F5; --accent: #3B4BA3; }
+    .card {
+      background: var(--card);
+      border: 3px solid var(--ink);
+      padding: 40px 32px;
+      border-radius: 22px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+    .icona { font-size: 3.5rem; line-height: 1; margin-bottom: 12px; }
+    h1 { color: var(--accent); margin: 0 0 8px; font-size: clamp(1.8rem, 7vw, 2.6rem); }
+    .nome { color: var(--ink); }
+    p { color: var(--muted); line-height: 1.6; margin: 8px 0 0; }
+    .ora { margin-top: 20px; font-variant-numeric: tabular-nums; font-size: .95rem; color: var(--muted); }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h1>150796 è online! 🌱</h1>
-    <p>Questo sito è stato creato con <strong>Pagi Hub</strong>.</p>
-    <p>Per pubblicare il sito vero, trascina la tua cartella HTML nell'applicazione.</p>
-  </div>
+<body data-momento="mattina">
+  <main class="card">
+    <div class="icona" id="icona" aria-hidden="true">🌅</div>
+    <h1><span id="saluto">Benvenuta</span>, <span class="nome">Rahma</span>!</h1>
+    <p id="frase">Che bello averti qui.</p>
+    <div class="ora" id="ora"></div>
+  </main>
+
+  <script>
+    // Fasce orarie: [ora d'inizio, id, saluto, icona, frase]
+    var FASCE = [
+      { da: 5,  id: "mattina",    saluto: "Buongiorno",    icona: "🌅", frase: "Spero che la giornata inizi nel modo migliore." },
+      { da: 13, id: "pomeriggio", saluto: "Buon pomeriggio", icona: "☀️", frase: "Un benvenuto speciale per il tuo pomeriggio." },
+      { da: 18, id: "sera",       saluto: "Buonasera",     icona: "🌇", frase: "Mettiti comoda, la serata è tua." },
+      { da: 22, id: "notte",      saluto: "Buonanotte",    icona: "🌙", frase: "Ti auguro una notte serena." }
+    ];
+
+    function fasciaPer(ora) {
+      if (ora >= 22 || ora < 5) return FASCE[3];
+      for (var i = FASCE.length - 2; i >= 0; i--) {
+        if (ora >= FASCE[i].da) return FASCE[i];
+      }
+      return FASCE[0];
+    }
+
+    function aggiorna() {
+      var adesso = new Date();
+      var f = fasciaPer(adesso.getHours());
+      document.body.setAttribute("data-momento", f.id);
+      document.getElementById("saluto").textContent = f.saluto;
+      document.getElementById("icona").textContent = f.icona;
+      document.getElementById("frase").textContent = f.frase;
+      document.getElementById("ora").textContent = adesso.toLocaleString("it-IT", {
+        weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    aggiorna();
+    setInterval(aggiorna, 30000);
+  </script>
 </body>
 </html>
