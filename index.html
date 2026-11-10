@@ -3,75 +3,153 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#BFD9EA">
   <title>Benvenuta, Rahma</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23F2B84B'/%3E%3C/svg%3E">
   <style>
+    /* Il cielo segue l'ora: ogni fascia ridefinisce gli stessi colori. */
     :root {
-      --bg: #FFF6E3;
-      --ink: #1B2B21;
-      --muted: #5C6A5F;
-      --accent: #1F883D;
-      --card: #fff;
+      --alto: #BFD9EA;      /* cielo in alto */
+      --basso: #FCE6CF;     /* cielo all'orizzonte */
+      --ink: #1D3340;       /* testo sul cielo */
+      --astro: #FFE6A0;
+      --alone: rgba(255, 214, 120, .55);
+      --lontano: #86AB9D;   /* colline lontane */
+      --terra: #2F5B4D;     /* prato in primo piano */
+      --luce: #F4F8EF;      /* testo sul prato */
+      --stelle: 0;
+      --x: .3;
+      --y: .6;
     }
+    body[data-momento="pomeriggio"] { --alto: #7DB6E6; --basso: #E4F1FA; --ink: #10304A; --astro: #FFF3B8; --alone: rgba(255, 236, 150, .6); --lontano: #6FA08E; --terra: #2B5C4B; }
+    body[data-momento="sera"]       { --alto: #5B4E86; --basso: #F2A07B; --ink: #FFF1E6; --astro: #FFD2A1; --alone: rgba(255, 170, 110, .5); --lontano: #6A4B73; --terra: #2A2540; --luce: #FFF1E6; --stelle: .45; }
+    body[data-momento="notte"]      { --alto: #0E1A3A; --basso: #27365F; --ink: #E8EEFF; --astro: #F3F1E4; --alone: rgba(200, 215, 255, .35); --lontano: #1B2850; --terra: #0B1224; --luce: #E8EEFF; --stelle: 1; }
+
     * { box-sizing: border-box; }
+    html { background: var(--terra); }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
       margin: 0;
-      padding: 16px;
-      text-align: center;
-      transition: background .6s;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     }
-    body[data-momento="mattina"]    { --bg: #FFF6E3; --accent: #1F883D; }
-    body[data-momento="pomeriggio"] { --bg: #FFEFC2; --accent: #B8680B; }
-    body[data-momento="sera"]       { --bg: #FFE0D1; --accent: #B3391F; }
-    body[data-momento="notte"]      { --bg: #DCE3F5; --accent: #3B4BA3; }
-    .card {
-      background: var(--card);
-      border: 3px solid var(--ink);
-      padding: 40px 32px;
-      border-radius: 22px;
-      max-width: 520px;
-      width: 100%;
-      box-shadow: 6px 6px 0 var(--ink);
+    .cielo {
+      position: fixed; inset: 0;
+      background: linear-gradient(to bottom, var(--alto) 0%, var(--basso) 85%);
+      z-index: -1;
     }
-    .icona { font-size: 3.5rem; line-height: 1; margin-bottom: 12px; }
-    h1 { color: var(--accent); margin: 0 0 8px; font-size: clamp(1.8rem, 7vw, 2.6rem); }
-    .nome { color: var(--ink); }
-    p { color: var(--muted); line-height: 1.6; margin: 8px 0 0; }
-    .link { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border: 3px solid var(--ink); border-radius: 16px; background: var(--bg); color: var(--ink); text-decoration: none; font-weight: 700; font-size: 1.1rem; text-align: left; box-shadow: 3px 3px 0 var(--ink); transition: transform .1s, box-shadow .1s; }
-    .link:hover, .link:focus-visible { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--accent); border-color: var(--accent); outline: none; }
-    .link:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
-    .link .emoji { font-size: 1.8rem; line-height: 1; }
-    .link .freccia { margin-left: auto; color: var(--accent); }
-    .link-lista { display: grid; gap: 14px; margin-top: 24px; }
-    .ora { margin-top: 20px; font-variant-numeric: tabular-nums; font-size: .95rem; color: var(--muted); }
+    .stelle { position: absolute; inset: 0 0 35% 0; opacity: var(--stelle); transition: opacity 1.5s; }
+    .stelle i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; }
+
+    .pagina { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
+    .colonna { width: min(36rem, 100% - 3rem); margin-inline: auto; }
+
+    /* Saluto */
+    .saluto { padding-top: clamp(2rem, 7vh, 5rem); }
+    h1 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      font-weight: 500;
+      font-size: clamp(2.5rem, 10vw, 4.5rem);
+      line-height: 1.02;
+      letter-spacing: -.015em;
+    }
+    .frase { margin: 1rem 0 0; font-size: 1.05rem; line-height: 1.55; max-width: 28ch; opacity: .85; }
+
+    /* Scena: qui viaggia il sole (o la luna) */
+    .scena { position: relative; flex: 1; min-height: clamp(10rem, 28vh, 24rem); }
+    .astro {
+      --d: clamp(64px, 11vw, 120px);
+      --col: clamp(70px, 15vw, 150px);
+      position: absolute; z-index: 1;
+      width: var(--d); height: var(--d);
+      left: calc((100% - var(--d)) * var(--x));
+      /* y = 0: quasi nascosto dietro le colline; y = 1: in cima alla scena */
+      bottom: calc(var(--col) * .55 - var(--d) * .9 + var(--y) * (100% - var(--d) - 1rem - var(--col) * .55 + var(--d) * .9));
+      transition: left 2.6s cubic-bezier(.2, .7, .2, 1), bottom 2.6s cubic-bezier(.2, .7, .2, 1);
+    }
+    .astro svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .astro .alone { fill: url(#alone); }
+    .astro .corpo { fill: var(--astro); }
+    .astro[data-corpo="sole"] .luna, .astro[data-corpo="luna"] .sole { display: none; }
+    .colline { position: absolute; z-index: 2; left: 0; bottom: -1px; width: 100%; height: clamp(70px, 15vw, 150px); fill: var(--lontano); display: block; }
+
+    /* Prato e collegamenti */
+    .terra { position: relative; z-index: 3; background: var(--terra); color: var(--luce); padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+    .onda { position: absolute; left: 0; top: -39px; width: 100%; height: 40px; fill: var(--terra); display: block; }
+    .elenco { list-style: none; margin: 0 auto; padding: .25rem 0 0; }
+    .elenco li + li { border-top: 1px solid color-mix(in srgb, var(--luce) 18%, transparent); }
+    .elenco a {
+      display: flex; align-items: center; gap: 1.1rem;
+      min-height: 4.5rem; padding: .75rem .25rem;
+      color: inherit; text-decoration: none;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      font-size: 1.6rem; line-height: 1.1;
+      border-radius: 10px;
+      transition: background .2s;
+    }
+    .elenco a:hover { background: color-mix(in srgb, var(--luce) 8%, transparent); }
+    .elenco a:focus-visible { outline: 3px solid var(--astro); outline-offset: 2px; }
+    .elenco .icona { width: 1.9rem; height: 1.9rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .elenco .vai { margin-left: auto; width: 1.1rem; height: 1.1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .55; transition: transform .2s, opacity .2s; }
+    .elenco a:hover .vai { transform: translateX(4px); opacity: 1; }
+    .ora { margin: 1.25rem auto 0; font-size: .9rem; opacity: .7; font-variant-numeric: tabular-nums; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .astro, .stelle, .elenco a, .elenco .vai { transition: none; }
+    }
   </style>
 </head>
 <body data-momento="mattina">
-  <main class="card">
-    <div class="icona" id="icona" aria-hidden="true">🌅</div>
-    <h1><span id="saluto">Benvenuta</span>, <span class="nome">Rahma</span>!</h1>
-    <p id="frase">Che bello averti qui.</p>
-    <nav class="link-lista" aria-label="I miei spazi">
-      <a class="link" href="https://bonaccia.150796.xyz/"><span class="emoji" aria-hidden="true">🌊</span>Bonaccia<span class="freccia" aria-hidden="true">→</span></a>
-      <a class="link" href="https://sakina.150796.xyz/"><span class="emoji" aria-hidden="true">🕊️</span>Sakina<span class="freccia" aria-hidden="true">→</span></a>
-      <a class="link" href="https://diario-get.150796.xyz/"><span class="emoji" aria-hidden="true">📓</span>Diario GET<span class="freccia" aria-hidden="true">→</span></a>
-    </nav>
-    <div class="ora" id="ora"></div>
-  </main>
+  <div class="cielo" aria-hidden="true"><div class="stelle" id="stelle"></div></div>
+
+  <div class="pagina">
+    <header class="colonna saluto">
+      <h1><span id="saluto">Buongiorno</span>,<br>Rahma</h1>
+      <p class="frase" id="frase">Spero che la giornata inizi nel modo migliore.</p>
+    </header>
+
+    <div class="scena" aria-hidden="true">
+      <div class="astro" id="astro" data-corpo="sole">
+        <svg width="0" height="0" style="position:absolute"><defs><radialGradient id="alone"><stop offset="45%" style="stop-color:var(--alone)"/><stop offset="100%" style="stop-color:var(--alone);stop-opacity:0"/></radialGradient></defs></svg>
+        <svg class="sole" viewBox="0 0 100 100"><circle class="alone" cx="50" cy="50" r="50"/><circle class="corpo" cx="50" cy="50" r="32"/></svg>
+        <svg class="luna" viewBox="0 0 100 100">
+          <defs><mask id="falce"><rect width="100" height="100" fill="#fff"/><circle cx="64" cy="42" r="29" fill="#000"/></mask></defs>
+          <circle class="alone" cx="50" cy="50" r="50"/>
+          <circle class="corpo" cx="50" cy="50" r="34" mask="url(#falce)"/>
+        </svg>
+      </div>
+      <svg class="colline" viewBox="0 0 1440 150" preserveAspectRatio="none"><path d="M0 150V90C140 40 260 30 400 70S640 120 800 70 1100 10 1260 50 1390 80 1440 60V150Z"/></svg>
+    </div>
+
+    <section class="terra">
+      <svg class="onda" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40V22C200 4 420 6 640 20S1060 34 1240 16 1400 8 1440 14V40Z"/></svg>
+      <nav class="colonna" aria-label="I miei spazi">
+        <ul class="elenco">
+          <li><a href="https://bonaccia.150796.xyz/">
+            <svg class="icona" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-3.5 6-3.5 9 0s6 3.5 9 0"/><path d="M3 15c3-3.5 6-3.5 9 0s6 3.5 9 0"/></svg>
+            Bonaccia
+            <svg class="vai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a></li>
+          <li><a href="https://sakina.150796.xyz/">
+            <svg class="icona" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 10 5 19 4c0 9-5 14-14 15z"/><path d="M5 19l9-9"/></svg>
+            Sakina
+            <svg class="vai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a></li>
+          <li><a href="https://diario-get.150796.xyz/">
+            <svg class="icona" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18"/><path d="M12.5 8h3M12.5 12h3"/></svg>
+            Diario GET
+            <svg class="vai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a></li>
+        </ul>
+        <p class="ora" id="ora"></p>
+      </nav>
+    </section>
+  </div>
 
   <script>
-    // Fasce orarie: [ora d'inizio, id, saluto, icona, frase]
+    // Fasce orarie: da (ora d'inizio), id, saluto, frase
     var FASCE = [
-      { da: 5,  id: "mattina",    saluto: "Buongiorno",    icona: "🌅", frase: "Spero che la giornata inizi nel modo migliore." },
-      { da: 13, id: "pomeriggio", saluto: "Buon pomeriggio", icona: "☀️", frase: "Un benvenuto speciale per il tuo pomeriggio." },
-      { da: 18, id: "sera",       saluto: "Buonasera",     icona: "🌇", frase: "Mettiti comoda, la serata è tua." },
-      { da: 22, id: "notte",      saluto: "Buonanotte",    icona: "🌙", frase: "Ti auguro una notte serena." }
+      { da: 5,  id: "mattina",    saluto: "Buongiorno",      frase: "Spero che la giornata inizi nel modo migliore." },
+      { da: 13, id: "pomeriggio", saluto: "Buon pomeriggio", frase: "Un benvenuto speciale per il tuo pomeriggio." },
+      { da: 18, id: "sera",       saluto: "Buonasera",       frase: "Mettiti comoda, la serata è tua." },
+      { da: 22, id: "notte",      saluto: "Buonanotte",      frase: "Ti auguro una notte serena." }
     ];
 
     function fasciaPer(ora) {
@@ -82,19 +160,46 @@
       return FASCE[0];
     }
 
+    // Stelle: posizioni fisse (stesso cielo a ogni visita)
+    (function () {
+      var box = document.getElementById("stelle"), seme = 7, html = "";
+      function caso() { seme = (seme * 16807) % 2147483647; return seme / 2147483647; }
+      for (var i = 0; i < 46; i++) {
+        var s = 2 + Math.round(caso() * 1.5);
+        html += '<i style="left:' + (caso() * 100).toFixed(1) + '%;top:' + (caso() * 100).toFixed(1) + '%;width:' + s + 'px;height:' + s + 'px;opacity:' + (0.55 + caso() * 0.45).toFixed(2) + '"></i>';
+      }
+      box.innerHTML = html;
+    })();
+
+    var COLORI_BARRA = { mattina: "#BFD9EA", pomeriggio: "#7DB6E6", sera: "#5B4E86", notte: "#0E1A3A" };
+    var astro = document.getElementById("astro");
+
     function aggiorna() {
       var adesso = new Date();
+      var h = adesso.getHours() + adesso.getMinutes() / 60;
       var f = fasciaPer(adesso.getHours());
       document.body.setAttribute("data-momento", f.id);
       document.getElementById("saluto").textContent = f.saluto;
-      document.getElementById("icona").textContent = f.icona;
       document.getElementById("frase").textContent = f.frase;
       document.getElementById("ora").textContent = adesso.toLocaleString("it-IT", {
         weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"
       });
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", COLORI_BARRA[f.id]);
+
+      // Il sole va da sinistra a destra dalle 6 alle 20, la luna dalle 20 alle 6.
+      var sole = h >= 6 && h < 20;
+      var t = sole ? (h - 6) / 14 : ((h >= 20 ? h - 20 : h + 4) / 10);
+      astro.setAttribute("data-corpo", sole ? "sole" : "luna");
+      astro.style.setProperty("--x", (0.08 + 0.84 * t).toFixed(3));
+      astro.style.setProperty("--y", Math.sin(Math.PI * t).toFixed(3));
     }
 
+    // All'apertura l'astro parte sotto le colline e sale al suo posto.
+    astro.style.setProperty("--y", "0");
     aggiorna();
+    var arrivo = astro.style.getPropertyValue("--y");
+    astro.style.setProperty("--y", "0");
+    requestAnimationFrame(function () { requestAnimationFrame(function () { astro.style.setProperty("--y", arrivo); }); });
     setInterval(aggiorna, 30000);
   </script>
 </body>
