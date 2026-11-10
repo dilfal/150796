@@ -3,27 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#BFD9EA">
+  <meta name="theme-color" content="#CFE2FF">
   <title>Benvenuta, Rahma</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23F2B84B'/%3E%3C/svg%3E">
+  <script>
+    // Il tema va scelto prima del primo disegno, per non lampeggiare.
+    (function () {
+      var scelta = "auto";
+      try { scelta = localStorage.getItem("tema150796") || "auto"; } catch (e) {}
+      var scuro = scelta === "scuro" || (scelta === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.setAttribute("data-tema", scuro ? "scuro" : "chiaro");
+    })();
+  </script>
   <style>
-    /* Il cielo segue l'ora: ogni fascia ridefinisce gli stessi colori. */
+    /* Due temi: chiaro e scuro. Stessi nomi di colore, valori diversi. */
     :root {
-      --alto: #BFD9EA;      /* cielo in alto */
-      --basso: #FCE6CF;     /* cielo all'orizzonte */
-      --ink: #1D3340;       /* testo sul cielo */
-      --astro: #FFE6A0;
-      --alone: rgba(255, 214, 120, .55);
-      --lontano: #86AB9D;   /* colline lontane */
-      --terra: #2F5B4D;     /* prato in primo piano */
-      --luce: #F4F8EF;      /* testo sul prato */
+      color-scheme: light;
+      --alto: #CFE2FF;      /* cielo in alto */
+      --basso: #FFE9D8;     /* cielo all'orizzonte */
+      --ink: #0F1F2E;       /* testo sul cielo */
+      --astro: #FFB94A;
+      --alone: rgba(255, 170, 70, .5);
+      --lontano: #A9D8C6;   /* colline lontane */
+      --terra: #F6F8F3;     /* prato in primo piano */
+      --luce: #12202B;      /* testo sul prato */
+      --segno: #0E8A78;     /* focus e selezione */
       --stelle: 0;
       --x: .3;
       --y: .6;
     }
-    body[data-momento="pomeriggio"] { --alto: #7DB6E6; --basso: #E4F1FA; --ink: #10304A; --astro: #FFF3B8; --alone: rgba(255, 236, 150, .6); --lontano: #6FA08E; --terra: #2B5C4B; }
-    body[data-momento="sera"]       { --alto: #5B4E86; --basso: #F2A07B; --ink: #FFF1E6; --astro: #FFD2A1; --alone: rgba(255, 170, 110, .5); --lontano: #6A4B73; --terra: #2A2540; --luce: #FFF1E6; --stelle: .45; }
-    body[data-momento="notte"]      { --alto: #0E1A3A; --basso: #27365F; --ink: #E8EEFF; --astro: #F3F1E4; --alone: rgba(200, 215, 255, .35); --lontano: #1B2850; --terra: #0B1224; --luce: #E8EEFF; --stelle: 1; }
+    :root[data-tema="scuro"] {
+      color-scheme: dark;
+      --alto: #090E24; --basso: #26307A; --ink: #EAF0FF;
+      --astro: #F6F2E4; --alone: rgba(190, 205, 255, .38);
+      --lontano: #1C2760; --terra: #090C18; --luce: #E9EEFF; --segno: #7CE3C8;
+      --stelle: 1;
+    }
 
     * { box-sizing: border-box; }
     html { background: var(--terra); }
@@ -56,7 +71,7 @@
     .frase { margin: 1rem 0 0; font-size: 1.05rem; line-height: 1.55; max-width: 28ch; opacity: .85; }
 
     /* Scena: qui viaggia il sole (o la luna) */
-    .scena { position: relative; flex: 1; min-height: clamp(10rem, 28vh, 24rem); }
+    .scena { position: relative; flex: 1; min-height: clamp(8rem, 22vh, 24rem); }
     .astro {
       --d: clamp(64px, 11vw, 120px);
       --col: clamp(70px, 15vw, 150px);
@@ -88,18 +103,27 @@
       transition: background .2s;
     }
     .elenco a:hover { background: color-mix(in srgb, var(--luce) 8%, transparent); }
-    .elenco a:focus-visible { outline: 3px solid var(--astro); outline-offset: 2px; }
+    .elenco a:focus-visible { outline: 3px solid var(--segno); outline-offset: 2px; }
     .elenco .icona { width: 1.9rem; height: 1.9rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
     .elenco .vai { margin-left: auto; width: 1.1rem; height: 1.1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .55; transition: transform .2s, opacity .2s; }
     .elenco a:hover .vai { transform: translateX(4px); opacity: 1; }
-    .ora { margin: 1.25rem auto 0; font-size: .9rem; opacity: .7; font-variant-numeric: tabular-nums; }
+    .piede { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; margin-top: 1.25rem; }
+    .ora { margin: 0; font-size: .9rem; opacity: .7; font-variant-numeric: tabular-nums; }
+    .aspetto { display: inline-flex; border: 1px solid color-mix(in srgb, var(--luce) 28%, transparent); border-radius: 999px; padding: 3px; }
+    .aspetto button {
+      font: inherit; font-size: .88rem; color: inherit; background: none; border: 0; cursor: pointer;
+      min-height: 2.25rem; padding: 0 .95rem; border-radius: 999px;
+    }
+    .aspetto button:hover { background: color-mix(in srgb, var(--luce) 10%, transparent); }
+    .aspetto button[aria-pressed="true"] { background: var(--luce); color: var(--terra); }
+    .aspetto button:focus-visible { outline: 3px solid var(--segno); outline-offset: 2px; }
 
     @media (prefers-reduced-motion: reduce) {
       .astro, .stelle, .elenco a, .elenco .vai { transition: none; }
     }
   </style>
 </head>
-<body data-momento="mattina">
+<body>
   <div class="cielo" aria-hidden="true"><div class="stelle" id="stelle"></div></div>
 
   <div class="pagina">
@@ -138,7 +162,14 @@
             Diario GET
             <svg class="vai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a></li>
         </ul>
-        <p class="ora" id="ora"></p>
+        <div class="piede">
+          <p class="ora" id="ora"></p>
+          <div class="aspetto" role="group" aria-label="Aspetto della pagina">
+            <button type="button" data-tema="auto" aria-pressed="false">Auto</button>
+            <button type="button" data-tema="chiaro" aria-pressed="false">Chiaro</button>
+            <button type="button" data-tema="scuro" aria-pressed="false">Scuro</button>
+          </div>
+        </div>
       </nav>
     </section>
   </div>
@@ -171,27 +202,60 @@
       box.innerHTML = html;
     })();
 
-    var COLORI_BARRA = { mattina: "#BFD9EA", pomeriggio: "#7DB6E6", sera: "#5B4E86", notte: "#0E1A3A" };
+    var COLORI_BARRA = { chiaro: "#CFE2FF", scuro: "#090E24" };
     var astro = document.getElementById("astro");
+    var radice = document.documentElement;
+    var mq = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+
+    function sceltaSalvata() {
+      try { return localStorage.getItem("tema150796") || "auto"; } catch (e) { return "auto"; }
+    }
+    function applicaTema() {
+      var scelta = sceltaSalvata();
+      var scuro = scelta === "scuro" || (scelta === "auto" && mq && mq.matches);
+      var tema = scuro ? "scuro" : "chiaro";
+      radice.setAttribute("data-tema", tema);
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", COLORI_BARRA[tema]);
+      var bottoni = document.querySelectorAll(".aspetto button");
+      for (var i = 0; i < bottoni.length; i++) {
+        bottoni[i].setAttribute("aria-pressed", bottoni[i].getAttribute("data-tema") === scelta ? "true" : "false");
+      }
+      astro.setAttribute("data-corpo", scuro ? "luna" : "sole");
+      posiziona();
+    }
+    function scegli(scelta) {
+      try { localStorage.setItem("tema150796", scelta); } catch (e) {}
+      applicaTema();
+    }
+    var tasti = document.querySelectorAll(".aspetto button");
+    for (var k = 0; k < tasti.length; k++) {
+      tasti[k].addEventListener("click", function () { scegli(this.getAttribute("data-tema")); });
+    }
+    if (mq && mq.addEventListener) mq.addEventListener("change", applicaTema);
+
+    // Il sole va da sinistra a destra dalle 6 alle 20, la luna dalle 20 alle 6.
+    // Se il corpo scelto dal tema non è "di turno" (sole di notte, luna di giorno) resta alto nel cielo.
+    function posiziona() {
+      var adesso = new Date();
+      var h = adesso.getHours() + adesso.getMinutes() / 60;
+      var giorno = h >= 6 && h < 20;
+      var corpoSole = astro.getAttribute("data-corpo") === "sole";
+      var t = 0.5;
+      if (corpoSole && giorno) t = (h - 6) / 14;
+      if (!corpoSole && !giorno) t = (h >= 20 ? h - 20 : h + 4) / 10;
+      astro.style.setProperty("--x", (0.08 + 0.84 * t).toFixed(3));
+      astro.style.setProperty("--y", Math.sin(Math.PI * t).toFixed(3));
+    }
 
     function aggiorna() {
       var adesso = new Date();
-      var h = adesso.getHours() + adesso.getMinutes() / 60;
       var f = fasciaPer(adesso.getHours());
-      document.body.setAttribute("data-momento", f.id);
       document.getElementById("saluto").textContent = f.saluto;
       document.getElementById("frase").textContent = f.frase;
       document.getElementById("ora").textContent = adesso.toLocaleString("it-IT", {
         weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"
       });
-      document.querySelector('meta[name="theme-color"]').setAttribute("content", COLORI_BARRA[f.id]);
-
-      // Il sole va da sinistra a destra dalle 6 alle 20, la luna dalle 20 alle 6.
-      var sole = h >= 6 && h < 20;
-      var t = sole ? (h - 6) / 14 : ((h >= 20 ? h - 20 : h + 4) / 10);
-      astro.setAttribute("data-corpo", sole ? "sole" : "luna");
-      astro.style.setProperty("--x", (0.08 + 0.84 * t).toFixed(3));
-      astro.style.setProperty("--y", Math.sin(Math.PI * t).toFixed(3));
+      applicaTema();
     }
 
     // All'apertura l'astro parte sotto le colline e sale al suo posto.
