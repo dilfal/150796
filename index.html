@@ -3,57 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#CFE2FF">
+  <meta name="theme-color" content="#9BC7FF">
   <title>Benvenuta, Rahma</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='34' fill='%23F2B84B'/%3E%3C/svg%3E">
   <script>
-    // Il tema va scelto prima del primo disegno, per non lampeggiare.
+    // Calcolo solare istantaneo per impostare data-tema prima del rendering (evita il flash).
     (function () {
-      var scelta = "auto";
-      try { scelta = localStorage.getItem("tema150796") || "auto"; } catch (e) {}
-      var scuro = scelta === "scuro" || (scelta === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+      var d = new Date(), lat = 41.9028, lon = 12.4964;
+      var n = Math.floor((d - new Date(d.getFullYear(), 0, 1)) / 86400000) + 1;
+      var b = 360 / 365 * (n - 81) * (Math.PI / 180);
+      var decl = 23.45 * Math.sin(b) * (Math.PI / 180);
+      var eot = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+      var noon = 12 - (d.getTimezoneOffset() / 60) - (lon / 15) - (eot / 60);
+      var cosW = (Math.sin(-0.833 * Math.PI / 180) - Math.sin(lat * Math.PI / 180) * Math.sin(decl)) / (Math.cos(lat * Math.PI / 180) * Math.cos(decl));
+      var w = Math.acos(Math.max(-1, Math.min(1, cosW))) * (180 / Math.PI);
+      var alba = noon - (w / 15), tramonto = noon + (w / 15);
+      var h = d.getHours() + d.getMinutes() / 60;
+      var scuro = (h < (alba - 0.2) || h >= (tramonto + 0.2));
       document.documentElement.setAttribute("data-tema", scuro ? "scuro" : "chiaro");
     })();
   </script>
   <style>
-    /* Due temi: chiaro e scuro. Stessi nomi di colore, valori diversi. */
+    /* I colori del cielo e della terra sfumano in modo continuo minuto per minuto
+       in base all'altezza del sole e alle effemeridi calcolate per l'Italia. */
     :root {
       color-scheme: light;
-      --alto: #CFE2FF;      /* cielo in alto */
-      --basso: #FFE9D8;     /* cielo all'orizzonte */
-      --ink: #0F1F2E;       /* testo sul cielo */
-      --astro: #FFB94A;
-      --alone: rgba(255, 170, 70, .5);
-      --lontano: #A9D8C6;   /* colline lontane */
-      --terra: #F6F8F3;     /* prato in primo piano */
-      --luce: #12202B;      /* testo sul prato */
-      --segno: #0E8A78;     /* focus e selezione */
+      --alto: #9BC7FF;
+      --basso: #EAF2FF;
+      --ink: #0F2236;
+      --astro: #FFBE3B;
+      --alone: rgba(255, 190, 70, .5);
+      --lontano: #97CBB8;
+      --terra: #F6F8F3;
+      --luce: #12202B;
+      --segno: #0E8A78;
       --stelle: 0;
-      --x: .3;
-      --y: .6;
+      --nuvole: 0.7;
+      --nuvola-colore: rgba(255, 255, 255, .45);
+      --bagliore: 0;
+      --alone-orizzonte: rgba(255, 160, 60, .6);
+      --x: .5;
+      --y: .8;
     }
     :root[data-tema="scuro"] {
       color-scheme: dark;
-      --alto: #090E24; --basso: #26307A; --ink: #EAF0FF;
-      --astro: #F6F2E4; --alone: rgba(190, 205, 255, .38);
-      --lontano: #1C2760; --terra: #090C18; --luce: #E9EEFF; --segno: #7CE3C8;
-      --stelle: 1;
+      --segno: #7CE3C8;
     }
 
     * { box-sizing: border-box; }
-    html { background: var(--terra); }
+    html {
+      background: var(--terra);
+      transition: background 2s;
+    }
     body {
       margin: 0;
       color: var(--ink);
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      transition: color 2s;
     }
     .cielo {
       position: fixed; inset: 0;
       background: linear-gradient(to bottom, var(--alto) 0%, var(--basso) 85%);
       z-index: -1;
+      transition: background 2s;
     }
-    .stelle { position: absolute; inset: 0 0 35% 0; opacity: var(--stelle); transition: opacity 1.5s; }
-    .stelle i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; }
+    .stelle {
+      position: absolute; inset: 0 0 35% 0;
+      opacity: var(--stelle);
+      transition: opacity 1.8s;
+      pointer-events: none;
+    }
+    .stelle i {
+      position: absolute; width: 2px; height: 2px;
+      border-radius: 50%; background: #fff;
+    }
+
+    /* Nuvole stilizzate delicate */
+    .nuvole {
+      position: absolute; inset: 0;
+      width: 100%; height: clamp(140px, 35vh, 320px);
+      pointer-events: none;
+      opacity: var(--nuvole);
+      transition: opacity 1.8s;
+      z-index: 1;
+    }
+    .nuvola {
+      fill: var(--nuvola-colore);
+      transition: fill 2s;
+    }
+    .n1 { animation: flotta1 110s ease-in-out infinite alternate; }
+    .n2 { animation: flotta2 140s ease-in-out infinite alternate; }
+    .n3 { animation: flotta3 125s ease-in-out infinite alternate; }
+
+    @keyframes flotta1 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(50px); }
+    }
+    @keyframes flotta2 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-60px); }
+    }
+    @keyframes flotta3 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(40px); }
+    }
 
     .pagina { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
     .colonna { width: min(36rem, 100% - 3rem); margin-inline: auto; }
@@ -68,10 +121,26 @@
       line-height: 1.02;
       letter-spacing: -.015em;
     }
-    .frase { margin: 1rem 0 0; font-size: 1.05rem; line-height: 1.55; max-width: min(32ch, 100%); opacity: .85; }
+    .frase {
+      margin: 1rem 0 0;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      max-width: min(32ch, 100%);
+      opacity: .88;
+      transition: opacity .3s;
+    }
 
     /* Scena: qui viaggia il sole (o la luna) */
     .scena { position: relative; flex: 1; min-height: clamp(8rem, 22vh, 24rem); }
+    .bagliore {
+      position: absolute; left: 0; right: 0; bottom: -1px;
+      height: clamp(80px, 18vw, 180px);
+      background: radial-gradient(ellipse 60% 90% at calc(100% * var(--x)) 100%, var(--alone-orizzonte) 0%, transparent 75%);
+      pointer-events: none;
+      z-index: 1;
+      opacity: var(--bagliore);
+      transition: opacity 1.8s;
+    }
     .astro {
       --d: clamp(64px, 11vw, 120px);
       --col: clamp(70px, 15vw, 150px);
@@ -84,13 +153,28 @@
     }
     .astro svg { width: 100%; height: 100%; display: block; overflow: visible; }
     .astro .alone { fill: url(#alone); }
-    .astro .corpo { fill: var(--astro); }
+    .astro .corpo { fill: var(--astro); transition: fill 2s; }
     .astro[data-corpo="sole"] .luna, .astro[data-corpo="luna"] .sole { display: none; }
-    .colline { position: absolute; z-index: 2; left: 0; bottom: -1px; width: 100%; height: clamp(70px, 15vw, 150px); fill: var(--lontano); display: block; }
+    .colline {
+      position: absolute; z-index: 2; left: 0; bottom: -1px;
+      width: 100%; height: clamp(70px, 15vw, 150px);
+      fill: var(--lontano); display: block;
+      transition: fill 2s;
+    }
 
     /* Prato e collegamenti */
-    .terra { position: relative; z-index: 3; background: var(--terra); color: var(--luce); padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
-    .onda { position: absolute; left: 0; top: -39px; width: 100%; height: 40px; fill: var(--terra); display: block; }
+    .terra {
+      position: relative; z-index: 3;
+      background: var(--terra); color: var(--luce);
+      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+      transition: background 2s, color 2s;
+    }
+    .onda {
+      position: absolute; left: 0; top: -39px;
+      width: 100%; height: 40px;
+      fill: var(--terra); display: block;
+      transition: fill 2s;
+    }
     .elenco { list-style: none; margin: 0 auto; padding: .25rem 0 0; }
     .elenco li + li { border-top: 1px solid color-mix(in srgb, var(--luce) 18%, transparent); }
     .elenco a {
@@ -107,24 +191,29 @@
     .elenco .icona { width: 1.9rem; height: 1.9rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
     .elenco .vai { margin-left: auto; width: 1.1rem; height: 1.1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .55; transition: transform .2s, opacity .2s; }
     .elenco a:hover .vai { transform: translateX(4px); opacity: 1; }
-    .piede { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; margin-top: 1.25rem; }
-    .ora { margin: 0; font-size: .9rem; opacity: .7; font-variant-numeric: tabular-nums; }
-    .aspetto { display: inline-flex; border: 1px solid color-mix(in srgb, var(--luce) 28%, transparent); border-radius: 999px; padding: 3px; }
-    .aspetto button {
-      font: inherit; font-size: .88rem; color: inherit; background: none; border: 0; cursor: pointer;
-      min-height: 2.25rem; padding: 0 .95rem; border-radius: 999px;
+    .piede {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: .75rem 1rem; margin-top: 1.5rem;
     }
-    .aspetto button:hover { background: color-mix(in srgb, var(--luce) 10%, transparent); }
-    .aspetto button[aria-pressed="true"] { background: var(--luce); color: var(--terra); }
-    .aspetto button:focus-visible { outline: 3px solid var(--segno); outline-offset: 2px; }
+    .ora { margin: 0; font-size: .92rem; opacity: .75; font-variant-numeric: tabular-nums; }
+    .effemeridi { margin: 0; font-size: .88rem; opacity: .65; font-variant-numeric: tabular-nums; }
 
     @media (prefers-reduced-motion: reduce) {
-      .astro, .stelle, .elenco a, .elenco .vai { transition: none; }
+      .astro, .stelle, .elenco a, .elenco .vai, .nuvole, .nuvola, .bagliore, html, body, .cielo, .colline, .terra, .onda {
+        transition: none; animation: none;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="cielo" aria-hidden="true"><div class="stelle" id="stelle"></div></div>
+  <div class="cielo" aria-hidden="true">
+    <div class="stelle" id="stelle"></div>
+    <svg class="nuvole" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path class="nuvola n1" d="M140 70 c30 -14 70 -12 100 4 c25 -10 60 -8 85 8 c25 4 40 18 40 32 c0 12 -8 20 -20 20 l-220 0 c-20 0 -35 -10 -35 -24 c0 -18 20 -35 50 -40 z" />
+      <path class="nuvola n2" d="M820 120 c35 -16 80 -14 115 5 c30 -12 70 -10 98 10 c30 5 45 22 45 38 c0 14 -10 23 -24 23 l-255 0 c-24 0 -42 -12 -42 -28 c0 -20 25 -42 63 -48 z" />
+      <path class="nuvola n3" d="M480 180 c25 -10 55 -8 80 4 c20 -8 45 -6 65 6 c20 3 32 15 32 25 c0 10 -6 16 -16 16 l-175 0 c-16 0 -30 -8 -30 -20 c0 -14 18 -27 44 -31 z" />
+    </svg>
+  </div>
 
   <div class="pagina">
     <header class="colonna saluto">
@@ -133,6 +222,7 @@
     </header>
 
     <div class="scena" aria-hidden="true">
+      <div class="bagliore"></div>
       <div class="astro" id="astro" data-corpo="sole">
         <svg width="0" height="0" style="position:absolute"><defs><radialGradient id="alone"><stop offset="0%" style="stop-color:var(--alone);stop-opacity:.9"/><stop offset="35%" style="stop-color:var(--alone);stop-opacity:.5"/><stop offset="70%" style="stop-color:var(--alone);stop-opacity:.14"/><stop offset="100%" style="stop-color:var(--alone);stop-opacity:0"/></radialGradient></defs></svg>
         <svg class="sole" viewBox="0 0 100 100"><circle class="alone" cx="50" cy="50" r="50"/><circle class="corpo" cx="50" cy="50" r="32"/></svg>
@@ -168,24 +258,157 @@
         </ul>
         <div class="piede">
           <p class="ora" id="ora"></p>
-          <div class="aspetto" role="group" aria-label="Aspetto della pagina">
-            <button type="button" data-tema="auto" aria-pressed="false">Auto</button>
-            <button type="button" data-tema="chiaro" aria-pressed="false">Chiaro</button>
-            <button type="button" data-tema="scuro" aria-pressed="false">Scuro</button>
-          </div>
+          <p class="effemeridi" id="effemeridi"></p>
         </div>
       </nav>
     </section>
   </div>
 
   <script>
-    // Fasce orarie: da (ora d'inizio), id, saluto
-    var FASCE = [
-      { da: 5,  id: "mattina",    saluto: "Buongiorno" },
-      { da: 13, id: "pomeriggio", saluto: "Buon pomeriggio" },
-      { da: 18, id: "sera",       saluto: "Buonasera" },
-      { da: 22, id: "notte",      saluto: "Buonanotte" }
-    ];
+    // Stelle: posizioni fisse (stesso cielo a ogni visita)
+    (function () {
+      var box = document.getElementById("stelle"), seme = 7, html = "";
+      function caso() { seme = (seme * 16807) % 2147483647; return seme / 2147483647; }
+      for (var i = 0; i < 46; i++) {
+        var s = 2 + Math.round(caso() * 1.5);
+        html += '<i style="left:' + (caso() * 100).toFixed(1) + '%;top:' + (caso() * 100).toFixed(1) + '%;width:' + s + 'px;height:' + s + 'px;opacity:' + (0.55 + caso() * 0.45).toFixed(2) + '"></i>';
+      }
+      box.innerHTML = html;
+    })();
+
+    // Calcolo astronomico di alba, tramonto e mezzogiorno solare per l'Italia (latitudine ~41.9° N / Roma).
+    // 100% offline, matematico, senza permessi di localizzazione o richieste di rete.
+    function calcolaSole(data) {
+      var lat = 41.9028, lon = 12.4964;
+      var inizioAnno = new Date(data.getFullYear(), 0, 1);
+      var N = Math.floor((data - inizioAnno) / 86400000) + 1;
+      var rad = Math.PI / 180, deg = 180 / Math.PI;
+      var B = 360 / 365 * (N - 81) * rad;
+      var decl = 23.45 * Math.sin(B) * rad;
+      var eot = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+      var tz = -data.getTimezoneOffset() / 60;
+      var noon = 12 + tz - (lon / 15) - (eot / 60);
+      var cosW0 = (Math.sin(-0.833 * rad) - Math.sin(lat * rad) * Math.sin(decl)) / (Math.cos(lat * rad) * Math.cos(decl));
+      var w0 = Math.acos(Math.max(-1, Math.min(1, cosW0))) * deg;
+      var alba = noon - (w0 / 15);
+      var tramonto = noon + (w0 / 15);
+      function fmt(h) {
+        var hh = Math.floor(h), mm = Math.round((h % 1) * 60);
+        if (mm >= 60) { hh = (hh + 1) % 24; mm = 0; }
+        return hh.toString().padStart(2, "0") + ":" + mm.toString().padStart(2, "0");
+      }
+      return { alba: alba, tramonto: tramonto, noon: noon, albaStr: fmt(alba), tramontoStr: fmt(tramonto) };
+    }
+
+    // Interpolazione colori hex RGB
+    function parseHex(h) {
+      h = h.replace("#", "");
+      if (h.length === 3) h = h.split("").map(function (c) { return c + c; }).join("");
+      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    }
+    function toHex(rgb) {
+      return "#" + rgb.map(function (v) {
+        return Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0");
+      }).join("");
+    }
+    function lerpRGB(c1, c2, t) {
+      var p1 = parseHex(c1), p2 = parseHex(c2);
+      return toHex([p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t, p1[2] + (p2[2] - p1[2]) * t]);
+    }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    // Generazione continua dei colori del cielo, delle colline, del prato e dell'astro
+    // lungo le 24 ore con transizioni fluide ancorate agli eventi solari reali.
+    function calcolaCielo(h, sole) {
+      var A = sole.alba, T = sole.tramonto, M = sole.noon;
+      var pts = [
+        { t: 0.0,     alto: "#070B1E", basso: "#151D48", lontano: "#121A3E", terra: "#090C18", luce: "#E9EEFF", ink: "#EAF0FF", astro: "#F6F2E4", alone: "rgba(190, 205, 255, .35)", aloneOr: "rgba(255, 140, 50, .4)", nuvola: "rgba(140, 160, 210, .18)", stelle: 1.0, nuvole: 0.15, bagliore: 0.0, scuro: true, corpo: "luna" },
+        { t: A - 1.2, alto: "#0B102B", basso: "#252B5C", lontano: "#1E254F", terra: "#0D1022", luce: "#EAF0FF", ink: "#EAF0FF", astro: "#F6F2E4", alone: "rgba(190, 205, 255, .35)", aloneOr: "rgba(255, 140, 50, .4)", nuvola: "rgba(160, 175, 225, .25)", stelle: 0.9, nuvole: 0.25, bagliore: 0.0, scuro: true, corpo: "luna" },
+        { t: A - 0.4, alto: "#1C264D", basso: "#9E5B6E", lontano: "#32375C", terra: "#181A2D", luce: "#F3EEF8", ink: "#F8EEF6", astro: "#FFE5B4", alone: "rgba(255, 190, 130, .45)", aloneOr: "rgba(255, 150, 70, .6)", nuvola: "rgba(235, 185, 190, .50)", stelle: 0.3, nuvole: 0.55, bagliore: 0.55, scuro: true, corpo: "sole" },
+        { t: A,       alto: "#4E7EBA", basso: "#FFB885", lontano: "#60868C", terra: "#FAF6EE", luce: "#16232D", ink: "#0F2032", astro: "#FFA133", alone: "rgba(255, 160, 50, .65)",  aloneOr: "rgba(255, 160, 60, .8)", nuvola: "rgba(255, 220, 195, .65)", stelle: 0.0, nuvole: 0.75, bagliore: 0.95, scuro: false, corpo: "sole" },
+        { t: A + 1.0, alto: "#89B7F5", basso: "#FDE4C8", lontano: "#88BEAC", terra: "#F6F8F3", luce: "#12202B", ink: "#0E1F2E", astro: "#FFB945", alone: "rgba(255, 180, 60, .50)",  aloneOr: "rgba(255, 175, 70, .5)", nuvola: "rgba(255, 255, 255, .50)", stelle: 0.0, nuvole: 0.75, bagliore: 0.2, scuro: false, corpo: "sole" },
+        { t: M,       alto: "#A4CDFF", basso: "#EAF2FF", lontano: "#9DD0BF", terra: "#F6F8F3", luce: "#12202B", ink: "#0D1E2D", astro: "#FFC43D", alone: "rgba(255, 195, 70, .45)",  aloneOr: "rgba(255, 190, 70, .3)", nuvola: "rgba(255, 255, 255, .50)", stelle: 0.0, nuvole: 0.70, bagliore: 0.0, scuro: false, corpo: "sole" },
+        { t: T - 1.2, alto: "#8DB2E8", basso: "#FEE0B8", lontano: "#92C0B0", terra: "#FAF7EF", luce: "#14212C", ink: "#10202F", astro: "#FFAE38", alone: "rgba(255, 170, 55, .55)",  aloneOr: "rgba(255, 160, 60, .4)", nuvola: "rgba(255, 245, 230, .55)", stelle: 0.0, nuvole: 0.75, bagliore: 0.2, scuro: false, corpo: "sole" },
+        { t: T - 0.3, alto: "#5A6EA8", basso: "#FFA366", lontano: "#6B6888", terra: "#FAF4EB", luce: "#182128", ink: "#161F2C", astro: "#FF882E", alone: "rgba(255, 140, 45, .70)",  aloneOr: "rgba(255, 140, 45, .8)", nuvola: "rgba(255, 195, 160, .65)", stelle: 0.0, nuvole: 0.80, bagliore: 0.85, scuro: false, corpo: "sole" },
+        { t: T + 0.1, alto: "#32376C", basso: "#E85D54", lontano: "#453B62", terra: "#1C1628", luce: "#F5EEF8", ink: "#FFF1EE", astro: "#FF6238", alone: "rgba(255, 100, 50, .75)",  aloneOr: "rgba(255, 90, 50, .9)", nuvola: "rgba(255, 165, 145, .60)", stelle: 0.1, nuvole: 0.75, bagliore: 0.95, scuro: true, corpo: "sole" },
+        { t: T + 0.6, alto: "#1B214C", basso: "#743C6B", lontano: "#292A54", terra: "#111322", luce: "#ECF0FF", ink: "#EEF2FF", astro: "#F4EFE2", alone: "rgba(215, 220, 255, .40)", aloneOr: "rgba(220, 140, 180, .5)", nuvola: "rgba(195, 175, 220, .40)", stelle: 0.6, nuvole: 0.45, bagliore: 0.4, scuro: true, corpo: "luna" },
+        { t: T + 1.4, alto: "#0E1332", basso: "#272658", lontano: "#181C43", terra: "#0B0D1B", luce: "#E9EEFF", ink: "#EAF0FF", astro: "#F6F2E4", alone: "rgba(190, 205, 255, .35)", aloneOr: "rgba(180, 140, 220, .3)", nuvola: "rgba(160, 175, 225, .25)", stelle: 0.85, nuvole: 0.25, bagliore: 0.0, scuro: true, corpo: "luna" },
+        { t: 24.0,    alto: "#070B1E", basso: "#151D48", lontano: "#121A3E", terra: "#090C18", luce: "#E9EEFF", ink: "#EAF0FF", astro: "#F6F2E4", alone: "rgba(190, 205, 255, .35)", aloneOr: "rgba(255, 140, 50, .4)", nuvola: "rgba(140, 160, 210, .18)", stelle: 1.0, nuvole: 0.15, bagliore: 0.0, scuro: true, corpo: "luna" }
+      ];
+
+      var p1 = pts[0], p2 = pts[pts.length - 1];
+      for (var i = 0; i < pts.length - 1; i++) {
+        if (h >= pts[i].t && h <= pts[i + 1].t) {
+          p1 = pts[i];
+          p2 = pts[i + 1];
+          break;
+        }
+      }
+      var span = p2.t - p1.t;
+      var ratio = span > 0 ? (h - p1.t) / span : 0;
+
+      var corpo = (h >= A - 0.4 && h <= T + 0.2) ? "sole" : "luna";
+
+      // Traiettoria dell'arco celeste reale (sole sorge a est e tramonta a ovest; luna sorge a est e tramonta a ovest)
+      var x = 0.5, y = 0.5;
+      if (corpo === "sole") {
+        if (h < A) {
+          x = 0.08;
+          y = Math.max(0, (h - (A - 0.4)) / 0.4) * 0.15;
+        } else if (h > T) {
+          x = 0.92;
+          y = Math.max(0, ((T + 0.2) - h) / 0.2) * 0.15;
+        } else {
+          var t = (h - A) / (T - A);
+          x = 0.08 + 0.84 * t;
+          y = Math.sin(Math.PI * t);
+        }
+      } else {
+        var durNotte = 24 - T + A;
+        var elapsed = (h >= T) ? (h - T) : (24 - T + h);
+        var tNotte = Math.max(0, Math.min(1, elapsed / durNotte));
+        x = 0.08 + 0.84 * tNotte;
+        y = Math.sin(Math.PI * tNotte);
+      }
+
+      return {
+        alto: lerpRGB(p1.alto, p2.alto, ratio),
+        basso: lerpRGB(p1.basso, p2.basso, ratio),
+        lontano: lerpRGB(p1.lontano, p2.lontano, ratio),
+        terra: lerpRGB(p1.terra, p2.terra, ratio),
+        luce: lerpRGB(p1.luce, p2.luce, ratio),
+        ink: lerpRGB(p1.ink, p2.ink, ratio),
+        astro: lerpRGB(p1.astro, p2.astro, ratio),
+        alone: ratio > 0.5 ? p2.alone : p1.alone,
+        aloneOr: ratio > 0.5 ? p2.aloneOr : p1.aloneOr,
+        nuvola: ratio > 0.5 ? p2.nuvola : p1.nuvola,
+        stelle: lerp(p1.stelle, p2.stelle, ratio).toFixed(2),
+        nuvole: lerp(p1.nuvole, p2.nuvole, ratio).toFixed(2),
+        bagliore: lerp(p1.bagliore, p2.bagliore, ratio).toFixed(2),
+        scuro: ratio > 0.5 ? p2.scuro : p1.scuro,
+        corpo: corpo,
+        x: x.toFixed(3),
+        y: Math.max(0, y).toFixed(3)
+      };
+    }
+
+    // Fasce orarie collegate al ciclo solare reale:
+    // - Mattina: dalle prime luci dell'alba alle 13:00
+    // - Pomeriggio: dalle 13:00 fino al tramonto
+    // - Sera: dal tramonto fino alle 22:00
+    // - Notte: dalle 22:00 fino all'alba
+    function fasciaPer(h, sole) {
+      if (h < Math.max(4.5, sole.alba - 0.5) || h >= 22.0) {
+        return { id: "notte", saluto: "Buonanotte" };
+      }
+      if (h < 13.0) {
+        return { id: "mattina", saluto: "Buongiorno" };
+      }
+      if (h < Math.min(18.5, sole.tramonto + 0.5)) {
+        return { id: "pomeriggio", saluto: "Buon pomeriggio" };
+      }
+      return { id: "sera", saluto: "Buonasera" };
+    }
 
     // Frasi per Rahma per ogni giorno della settimana (0 = domenica) e fascia oraria,
     // ispirate e parafrasate dalle fonti cliniche (Bowlby, Linehan, Carbone, Bateman & Fonagy, Kabat-Zinn, Porr, Modello GET).
@@ -234,95 +457,70 @@
       }
     };
 
-    function fasciaPer(ora) {
-      if (ora >= 22 || ora < 5) return FASCE[3];
-      for (var i = FASCE.length - 2; i >= 0; i--) {
-        if (ora >= FASCE[i].da) return FASCE[i];
-      }
-      return FASCE[0];
-    }
-
     function frasePer(giorno, fasciaId) {
       var perGiorno = FRASI[giorno] || FRASI[0];
       return perGiorno[fasciaId] || perGiorno.mattina;
     }
 
-    // Stelle: posizioni fisse (stesso cielo a ogni visita)
-    (function () {
-      var box = document.getElementById("stelle"), seme = 7, html = "";
-      function caso() { seme = (seme * 16807) % 2147483647; return seme / 2147483647; }
-      for (var i = 0; i < 46; i++) {
-        var s = 2 + Math.round(caso() * 1.5);
-        html += '<i style="left:' + (caso() * 100).toFixed(1) + '%;top:' + (caso() * 100).toFixed(1) + '%;width:' + s + 'px;height:' + s + 'px;opacity:' + (0.55 + caso() * 0.45).toFixed(2) + '"></i>';
-      }
-      box.innerHTML = html;
-    })();
-
-    var COLORI_BARRA = { chiaro: "#CFE2FF", scuro: "#090E24" };
     var astro = document.getElementById("astro");
     var radice = document.documentElement;
-    var mq = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
-
-    function sceltaSalvata() {
-      try { return localStorage.getItem("tema150796") || "auto"; } catch (e) { return "auto"; }
-    }
-    function applicaTema() {
-      var scelta = sceltaSalvata();
-      var scuro = scelta === "scuro" || (scelta === "auto" && mq && mq.matches);
-      var tema = scuro ? "scuro" : "chiaro";
-      radice.setAttribute("data-tema", tema);
-      document.querySelector('meta[name="theme-color"]').setAttribute("content", COLORI_BARRA[tema]);
-      var bottoni = document.querySelectorAll(".aspetto button");
-      for (var i = 0; i < bottoni.length; i++) {
-        bottoni[i].setAttribute("aria-pressed", bottoni[i].getAttribute("data-tema") === scelta ? "true" : "false");
-      }
-      astro.setAttribute("data-corpo", scuro ? "luna" : "sole");
-      posiziona();
-    }
-    function scegli(scelta) {
-      try { localStorage.setItem("tema150796", scelta); } catch (e) {}
-      applicaTema();
-    }
-    var tasti = document.querySelectorAll(".aspetto button");
-    for (var k = 0; k < tasti.length; k++) {
-      tasti[k].addEventListener("click", function () { scegli(this.getAttribute("data-tema")); });
-    }
-    if (mq && mq.addEventListener) mq.addEventListener("change", applicaTema);
-
-    // Il sole va da sinistra a destra dalle 6 alle 20, la luna dalle 20 alle 6.
-    // Se il corpo scelto dal tema non è "di turno" (sole di notte, luna di giorno) resta alto nel cielo.
-    function posiziona() {
-      var adesso = new Date();
-      var h = adesso.getHours() + adesso.getMinutes() / 60;
-      var giorno = h >= 6 && h < 20;
-      var corpoSole = astro.getAttribute("data-corpo") === "sole";
-      var t = 0.5;
-      if (corpoSole && giorno) t = (h - 6) / 14;
-      if (!corpoSole && !giorno) t = (h >= 20 ? h - 20 : h + 4) / 10;
-      astro.style.setProperty("--x", (0.08 + 0.84 * t).toFixed(3));
-      astro.style.setProperty("--y", Math.sin(Math.PI * t).toFixed(3));
-    }
 
     function aggiorna() {
       var adesso = new Date();
-      var ora = adesso.getHours();
-      var f = fasciaPer(ora);
-      var giorno = (ora < 5) ? (adesso.getDay() + 6) % 7 : adesso.getDay();
+      var oraFraz = adesso.getHours() + adesso.getMinutes() / 60;
+      var sole = calcolaSole(adesso);
+      var cielo = calcolaCielo(oraFraz, sole);
+
+      // Applica le variabili cromatiche continue
+      radice.style.setProperty("--alto", cielo.alto);
+      radice.style.setProperty("--basso", cielo.basso);
+      radice.style.setProperty("--lontano", cielo.lontano);
+      radice.style.setProperty("--terra", cielo.terra);
+      radice.style.setProperty("--luce", cielo.luce);
+      radice.style.setProperty("--ink", cielo.ink);
+      radice.style.setProperty("--astro", cielo.astro);
+      radice.style.setProperty("--alone", cielo.alone);
+      radice.style.setProperty("--alone-orizzonte", cielo.aloneOr);
+      radice.style.setProperty("--nuvola-colore", cielo.nuvola);
+      radice.style.setProperty("--stelle", cielo.stelle);
+      radice.style.setProperty("--nuvole", cielo.nuvole);
+      radice.style.setProperty("--bagliore", cielo.bagliore);
+      radice.style.setProperty("--x", cielo.x);
+      radice.style.setProperty("--y", cielo.y);
+
+      radice.setAttribute("data-tema", cielo.scuro ? "scuro" : "chiaro");
+      var metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) metaTheme.setAttribute("content", cielo.alto);
+      astro.setAttribute("data-corpo", cielo.corpo);
+
+      // Saluto e frase incoraggiante per Rahma
+      var f = fasciaPer(oraFraz, sole);
+      var g = (oraFraz < Math.max(4.5, sole.alba - 0.5)) ? (adesso.getDay() + 6) % 7 : adesso.getDay();
       document.getElementById("saluto").textContent = f.saluto;
-      document.getElementById("frase").textContent = frasePer(giorno, f.id);
+      document.getElementById("frase").textContent = frasePer(g, f.id);
+
+      // Data, ora ed effemeridi del giorno
       document.getElementById("ora").textContent = adesso.toLocaleString("it-IT", {
         weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"
       });
-      applicaTema();
+      document.getElementById("effemeridi").textContent = "Alba " + sole.albaStr + " · Tramonto " + sole.tramontoStr;
     }
 
-    // All'apertura l'astro parte sotto le colline e sale al suo posto.
+    // All'apertura l'astro parte sotto le colline e sale al suo posto celeste naturale.
     astro.style.setProperty("--y", "0");
     aggiorna();
-    var arrivo = astro.style.getPropertyValue("--y");
+    var arrivoY = astro.style.getPropertyValue("--y");
     astro.style.setProperty("--y", "0");
-    requestAnimationFrame(function () { requestAnimationFrame(function () { astro.style.setProperty("--y", arrivo); }); });
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        astro.style.setProperty("--y", arrivoY);
+      });
+    });
+
     setInterval(aggiorna, 30000);
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) aggiorna();
+    });
   </script>
 </body>
 </html>
