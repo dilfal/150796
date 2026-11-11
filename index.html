@@ -68,7 +68,7 @@
       line-height: 1.02;
       letter-spacing: -.015em;
     }
-    .frase { margin: 1rem 0 0; font-size: 1.05rem; line-height: 1.55; max-width: 28ch; opacity: .85; }
+    .frase { margin: 1rem 0 0; font-size: 1.05rem; line-height: 1.55; max-width: min(32ch, 100%); opacity: .85; }
 
     /* Scena: qui viaggia il sole (o la luna) */
     .scena { position: relative; flex: 1; min-height: clamp(8rem, 22vh, 24rem); }
@@ -179,13 +179,60 @@
   </div>
 
   <script>
-    // Fasce orarie: da (ora d'inizio), id, saluto, frase
+    // Fasce orarie: da (ora d'inizio), id, saluto
     var FASCE = [
-      { da: 5,  id: "mattina",    saluto: "Buongiorno",      frase: "Spero che la giornata inizi nel modo migliore." },
-      { da: 13, id: "pomeriggio", saluto: "Buon pomeriggio", frase: "Un benvenuto speciale per il tuo pomeriggio." },
-      { da: 18, id: "sera",       saluto: "Buonasera",       frase: "Mettiti comoda, la serata è tua." },
-      { da: 22, id: "notte",      saluto: "Buonanotte",      frase: "Ti auguro una notte serena." }
+      { da: 5,  id: "mattina",    saluto: "Buongiorno" },
+      { da: 13, id: "pomeriggio", saluto: "Buon pomeriggio" },
+      { da: 18, id: "sera",       saluto: "Buonasera" },
+      { da: 22, id: "notte",      saluto: "Buonanotte" }
     ];
+
+    // Frasi per Rahma per ogni giorno della settimana (0 = domenica) e fascia oraria,
+    // ispirate e parafrasate dalle fonti cliniche (Bowlby, Linehan, Carbone, Bateman & Fonagy, Kabat-Zinn, Porr, Modello GET).
+    var FRASI = {
+      0: { // Domenica – Base sicura e appoggio (Bowlby; Modello GET)
+        mattina: "Inizia questa domenica con passo lento: non c’è fretta. Concediti uno spazio solo tuo per respirare.",
+        pomeriggio: "Non devi portare tutto da sola sulle tue spalle. C’è sempre un appoggio a cui poterti affidare.",
+        sera: "La nuova settimana si avvicina, ma stasera c’è solo questa sera. Una cosa buona alla volta.",
+        notte: "Lascia andare i pensieri su domani. Il letto ti sostiene: per stanotte sei al sicuro, riposa."
+      },
+      1: { // Lunedì – Presenza e mente saggia (Linehan; Williams & Kabat-Zinn)
+        mattina: "Non serve affrontare tutta la settimana oggi: basta questo singolo passo, qui e adesso.",
+        pomeriggio: "Se la testa corre troppo avanti, fermati un istante. Senti i piedi a terra: sei qui, nel presente.",
+        sera: "Il lunedì è passato e hai fatto la tua parte. Adesso rallenta e lascia il resto fuori dalla porta.",
+        notte: "Non c’è più niente da risolvere oggi. Ascolta il ritmo calmo del tuo respiro e lasciati andare."
+      },
+      2: { // Martedì – Regolazione emotiva e onde del sentire (Linehan; Federica Carbone)
+        mattina: "Qualunque cosa tu senta oggi, ha diritto di esistere. Accoglila senza giudizio e inizia con dolcezza.",
+        pomeriggio: "Le emozioni sono come onde: salgono, toccano la cima e poi scendono piano. Tu rimani salda.",
+        sera: "Hai attraversato la giornata con tutto ciò che conteneva. Ora posa ogni peso e riprendi fiato.",
+        notte: "Il mare della giornata ritrova la calma. Quello che senti ha un senso: adesso puoi dormire serena."
+      },
+      3: { // Mercoledì – Mentalizzare, curiosità e gentilezza verso di sé (Bateman & Fonagy; Modello GET)
+        mattina: "Guarda a questo nuovo giorno con curiosità gentile: ogni momento può offrirti qualcosa di buono.",
+        pomeriggio: "Non siamo tenute a indovinare i pensieri altrui: regalati il sollievo di dire «non posso sapere».",
+        sera: "Se qualcosa oggi ti ha confusa, non tormentarti. Sii curiosa e paziente con te stessa.",
+        notte: "Non tutte le risposte servono stanotte. Lascia aperte le domande e affidati alla quiete del buio."
+      },
+      4: { // Giovedì – Relazioni, legami e rispetto di sé (Linehan DEAR MAN, GIVE, FAST)
+        mattina: "I tuoi desideri e i tuoi bisogni hanno valore. Puoi esprimerti con calma e farti ascoltare.",
+        pomeriggio: "Puoi proteggere i tuoi spazi e voler bene allo stesso tempo. Ricorda che anche tu meriti cura.",
+        sera: "Hai dedicato energie al mondo: ora è il momento di riportare tutta la tenerezza verso di te.",
+        notte: "Sei degna di cura e rispetto così come sei. Chiudi gli occhi sapendo che vali."
+      },
+      5: { // Venerdì – Tolleranza del disagio e forza tranquilla (Linehan; Federica Carbone)
+        mattina: "Sei arrivata fin qui con tenacia e coraggio. Questo giorno porta verso un approdo sereno.",
+        pomeriggio: "Se senti stanchezza o tensione, fermati un attimo. Questo momento difficile passerà, tu resti.",
+        sera: "Hai superato le prove di questi giorni. Togliti ogni peso dalle spalle: la serata è tutta tua.",
+        notte: "Hai retto la fatica con dignità e cuore. Ora puoi deporre ogni armatura e riposare davvero."
+      },
+      6: { // Sabato – Autovalidazione e valore di sé (Linehan; Valerie Porr)
+        mattina: "Oggi regalati la stessa comprensione e gentilezza che riserveresti a chi ami di più al mondo.",
+        pomeriggio: "Trova una piccola cosa bella solo per te: un raggio di sole, un sapore, un attimo di pace.",
+        sera: "Non sei sbagliata per come senti la vita: la tua sensibilità è una bussola profonda e preziosa.",
+        notte: "Sii fiera del cammino che stai facendo, un passo alla volta. Dormi con il cuore leggero."
+      }
+    };
 
     function fasciaPer(ora) {
       if (ora >= 22 || ora < 5) return FASCE[3];
@@ -193,6 +240,11 @@
         if (ora >= FASCE[i].da) return FASCE[i];
       }
       return FASCE[0];
+    }
+
+    function frasePer(giorno, fasciaId) {
+      var perGiorno = FRASI[giorno] || FRASI[0];
+      return perGiorno[fasciaId] || perGiorno.mattina;
     }
 
     // Stelle: posizioni fisse (stesso cielo a ogni visita)
@@ -253,9 +305,11 @@
 
     function aggiorna() {
       var adesso = new Date();
-      var f = fasciaPer(adesso.getHours());
+      var ora = adesso.getHours();
+      var f = fasciaPer(ora);
+      var giorno = (ora < 5) ? (adesso.getDay() + 6) % 7 : adesso.getDay();
       document.getElementById("saluto").textContent = f.saluto;
-      document.getElementById("frase").textContent = f.frase;
+      document.getElementById("frase").textContent = frasePer(giorno, f.id);
       document.getElementById("ora").textContent = adesso.toLocaleString("it-IT", {
         weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"
       });
